@@ -1,4 +1,6 @@
 const HtmlWebPackPlugin = require("html-webpack-plugin");
+const ExtractTextPlugin = require("extract-text-webpack-plugin");
+const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 
 module.exports = {
   module: {
@@ -15,9 +17,26 @@ module.exports = {
         use: [
           {
             loader: "html-loader",
-            options: { minimize: true }
+            options: {minimize: true}
           }
         ]
+      },
+      {
+        test: /\.s?css$/,
+        use: ExtractTextPlugin.extract({
+          use: [
+            {
+              loader: "css-loader", options: {
+                sourceMap: true
+              }
+            }, {
+              loader: "sass-loader", options: {
+                sourceMap: true
+              }
+            }
+          ],
+          fallback: "style-loader"
+        })
       }
     ]
   },
@@ -25,6 +44,13 @@ module.exports = {
     new HtmlWebPackPlugin({
       template: "./src/index.html",
       filename: "./index.html"
-    })
+    }),
+    new ExtractTextPlugin("styles.css"),
+    new OptimizeCssAssetsPlugin({
+      assetNameRegExp: /\.css$/g,
+      cssProcessor: require('cssnano'),
+      cssProcessorOptions: { discardComments: { removeAll: true } },
+      canPrint: true
+    }),
   ]
 };
